@@ -148,6 +148,15 @@ window.downloadFinal = () => {
     link.download = 'poseid.png';
     link.href = document.getElementById("previewCanvas").toDataURL();
     link.click();
+}
+
+// Tambahkan/Pastikan baris ini ada di paling bawah app.js Anda
+window.onload = () => {
+    init();
+    // Memastikan selector muncul di HP maupun PC
+    if(typeof updateARSelector === "function") updateARSelector();
+    if(typeof updateAssetSelectors === "function") updateAssetSelectors();
 };
 
 init();
+
