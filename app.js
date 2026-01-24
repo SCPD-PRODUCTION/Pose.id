@@ -34,8 +34,7 @@ async function init() {
     };
 }
 
-// ... (initThreeJS, initFaceMesh, loadARFilters sama seperti sebelumnya) ...
-// (Sederhananya: setup renderer dan detector wajah)
+// ... (initThreeJS, initFaceMesh, loadARFilters tetap ada di file Anda) ...
 
 async function renderLoop() {
     ctx2D.save();
@@ -88,7 +87,6 @@ function openEditor() {
     document.getElementById("cameraSection").style.display = "none";
     document.getElementById("editSection").style.display = "block";
     
-    // Auto-select first asset
     selectedBg = `assets/background/layout${currentLayout}/bg1.png`;
     selectedSticker = `assets/sticker/layout${currentLayout}/sticker1.png`;
     
@@ -99,6 +97,7 @@ function openEditor() {
 
 function renderAssetList(id, folder, prefix) {
     const el = document.getElementById(id);
+    if(!el) return; // Tambahan aman agar tidak error
     el.innerHTML = "";
     for (let i = 1; i <= 10; i++) {
         const img = document.createElement("img");
@@ -150,13 +149,24 @@ window.downloadFinal = () => {
     link.click();
 }
 
-// Tambahkan/Pastikan baris ini ada di paling bawah app.js Anda
-window.onload = () => {
+// --- BAGIAN YANG SAYA TAMBAHKAN UNTUK FIX TOMBOL ---
+
+// Alias fungsi agar tombol setLayout di HTML bisa memanggil changeLayout di JS
+window.setLayout = (l, btn) => {
+    window.changeLayout(l, btn);
+};
+
+// Pastikan inisialisasi dipanggil setelah DOM benar-benar siap
+document.addEventListener("DOMContentLoaded", () => {
     init();
-    // Memastikan selector muncul di HP maupun PC
+    // Tambahan jeda sedikit agar detector AR siap
+    setTimeout(() => {
+        if(typeof loadARFilters === "function") loadARFilters();
+    }, 1000);
+});
+
+window.onload = () => {
+    // Fungsi bawaan Anda
     if(typeof updateARSelector === "function") updateARSelector();
     if(typeof updateAssetSelectors === "function") updateAssetSelectors();
 };
-
-init();
-
