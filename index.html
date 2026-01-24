@@ -2,73 +2,74 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pose.id - Photo Booth Studio</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-landmarks-detection"></script>
+    <title>Pose.id — 3D AR Photo Booth</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="style.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.161.0/examples/js/loaders/GLTFLoader.js"></script>
 </head>
 <body>
-    <div class="container">
-        <h1>📸 Pose.id</h1>
 
-        <div id="cameraSection">
-            <div class="main-grid">
-                <div class="camera-section">
-                    <div class="camera-container">
-                        <video id="camera" autoplay playsinline></video>
-                        <canvas id="camera_canvas"></canvas>
-                        <canvas id="ar_canvas"></canvas>
-                        <div class="timer-overlay" id="timer"></div>
-                    </div>
-                    <button class="capture-btn active" onclick="startCapture()">📷 MULAI AMBIL FOTO</button>
-                </div>
+<div class="app-container">
+    <div class="glass-card">
+        <header class="header">
+            <h1 class="logo">📸 Pose.id</h1>
+            <p class="tagline">Abadikan Momen Spesial Anda!</p>
+        </header>
 
-                <div class="controls">
-                    <div class="control-group">
-                        <h3>📐 Pilih Layout</h3>
-                        <div class="layout-buttons">
-                            <button class="layout-btn active" onclick="changeLayout(1, this)">Layout 1</button>
-                            <button class="layout-btn active" onclick="changeLayout(2, this)">Layout 2</button>
-                            <button class="layout-btn active" onclick="changeLayout(3, this)">Layout 3</button>
-                            <button class="layout-btn active" onclick="changeLayout(4, this)">Layout 4</button>
-                            <button class="layout-btn active" onclick="changeLayout(5, this)">Layout 5</button>
-                        </div>
-                    </div>
-                    <div class="control-group">
-                        <h3>✨ Filter AR</h3>
-                        <div id="arSelector" class="scroll-x"></div>
-                    </div>
-                </div>
+        <div class="booth-side">
+            <div class="booth-container" id="cameraSection">
+                <video id="video" autoplay muted playsinline></video>
+                <canvas id="canvas"></canvas>
+                <div id="timer" class="timer-overlay"></div>
+            </div>
+            
+            <div class="booth-container" id="editSection" style="display:none;">
+                <canvas id="previewCanvas"></canvas>
+            </div>
+
+            <div class="action-buttons">
+                <button id="snap" class="btn-main" onclick="startCapture()">📷 AMBIL FOTO</button>
+                <button id="downloadBtn" class="btn-download" style="display:none;" onclick="downloadFinal()">💾 DOWNLOAD STRIP</button>
+                <button id="resetBtn" class="btn-reset" style="display:none;" onclick="location.reload()">🔄 ULANGI</button>
             </div>
         </div>
 
-        <div id="editSection" style="display:none;">
-            <div class="main-grid">
-                <div class="camera-section">
-                    <div class="preview-container">
-                        <canvas id="previewCanvas"></canvas>
-                    </div>
-                    <button class="download-all-btn" onclick="downloadFinal()">💾 DOWNLOAD FOTO</button>
-                    <button class="capture-btn" style="background:#888; margin-top:10px;" onclick="location.reload()">🔄 ULANGI</button>
+        <div class="control-side">
+            <div id="layoutControls" class="control-group">
+                <h3>📐 Pilih Layout</h3>
+                <div class="layout-grid">
+                    <button class="l-btn active" onclick="changeLayout(1, this)">1 Foto</button>
+                    <button class="l-btn" onclick="changeLayout(2, this)">2 Foto</button>
+                    <button class="l-btn" onclick="changeLayout(3, this)">3 Foto</button>
+                    <button class="l-btn" onclick="changeLayout(4, this)">4 Kotak</button>
+                    <button class="l-btn" onclick="changeLayout(5, this)">5 Strip</button>
                 </div>
+            </div>
 
-                <div class="controls">
-                    <div class="control-group">
-                        <h3>🖼️ 1. Pilih Background</h3>
-                        <div id="bgSelector" class="asset-grid scroll-x"></div>
-                    </div>
-                    <div class="control-group">
-                        <h3>🎨 2. Pilih Sticker / Frame</h3>
-                        <div id="stickerSelector" class="asset-grid scroll-x"></div>
-                    </div>
+            <div id="editorControls" style="display:none;">
+                <div class="control-group">
+                    <h3>🖼️ 1. Pilih Background</h3>
+                    <div id="bgSelector" class="scroll-x"></div>
                 </div>
+                <div class="control-group">
+                    <h3>🎨 2. Pilih Sticker / Frame</h3>
+                    <div id="stickerSelector" class="scroll-x"></div>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>✨ Filter AR</h3>
+                <div class="ar-filters" id="arSelector">
+                    </div>
             </div>
         </div>
     </div>
-    <script src="app.js"></script>
+</div>
+
+<script type="module" src="app.js"></script>
 </body>
 </html>
-
