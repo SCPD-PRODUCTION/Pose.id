@@ -128,13 +128,14 @@ async function updatePreview() {
     ctx.drawImage(st, 0, 0, previewCanvas.width, previewCanvas.height);
 }
 
-function downloadFinal() {
+window.downloadFinal = () => {
     const link = document.createElement('a');
-    link.download = 'poseid.png';
-    link.href = document.getElementById("previewCanvas").toDataURL();
+    link.download = `PoseID_${Date.now()}.png`;
+    link.href = previewCanvas.toDataURL();
     link.click();
-}
+};
 
 // Jalankan aplikasi
 startApp();
+
 
