@@ -55,7 +55,6 @@ window.changeLayout = (l, btn) => {
     if (btn) btn.classList.add('active');
 };
 
-// Alias untuk tombol HTML yang memanggil setLayout
 window.setLayout = (l, btn) => {
     window.changeLayout(l, btn);
 };
@@ -149,6 +148,7 @@ async function updatePreview() {
     for (let i = 0; i < capturedPhotos.length; i++) {
         const p = await loadImg(capturedPhotos[i]);
         if (!p) continue;
+
         let x, y;
         if (conf.isGrid) {
             x = 50 + (i % 2 * conf.gap);
@@ -160,7 +160,30 @@ async function updatePreview() {
             x = (canvas.width - conf.photoW) / 2;
             y = conf.startY + (i * conf.gap);
         }
-        ctx.drawImage(p, x, y, conf.photoW, conf.photoH);
+
+        // LOGIKA CENTER CROP (Mencegah Gepeng)
+        const imgW = p.width;
+        const imgH = p.height;
+        const targetW = conf.photoW;
+        const targetH = conf.photoH;
+
+        const imgAspect = imgW / imgH;
+        const targetAspect = targetW / targetH;
+
+        let sX, sY, sW, sH;
+        if (imgAspect > targetAspect) {
+            sH = imgH;
+            sW = imgH * targetAspect;
+            sX = (imgW - sW) / 2;
+            sY = 0;
+        } else {
+            sW = imgW;
+            sH = imgW / targetAspect;
+            sX = 0;
+            sY = (imgH - sH) / 2;
+        }
+
+        ctx.drawImage(p, sX, sY, sW, sH, x, y, targetW, targetH);
     }
 
     const st = await loadImg(selectedSticker);
@@ -178,8 +201,6 @@ window.downloadFinal = () => {
 // INITIALIZATION
 document.addEventListener("DOMContentLoaded", () => {
     init();
-    
-    // Sinkronisasi ulang untuk selector filter jika ada
     setTimeout(() => {
         if (typeof updateARSelector === "function") updateARSelector();
         if (typeof updateAssetSelectors === "function") updateAssetSelectors();
