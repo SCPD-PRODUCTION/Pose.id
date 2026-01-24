@@ -1,62 +1,65 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pose.id - Photo Booth Studio</title>
+    <title>Pose.id - Mix & Match</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="app-container">
-        <div id="cameraSection">
-            <div class="camera-box">
-                <video id="camera" autoplay playsinline></video>
-                <canvas id="camera_canvas"></canvas>
-                <canvas id="ar_canvas"></canvas>
-                <div id="timer">3</div>
-            </div>
-
-            <div class="controls">
-                <p>Pilih Layout:</p>
-                <div class="layout-tabs">
-                    <button class="layout-btn active" onclick="changeLayout(1, this)">L1</button>
-                    <button class="layout-btn" onclick="changeLayout(2, this)">L2</button>
-                    <button class="layout-btn" onclick="changeLayout(3, this)">L3</button>
-                    <button class="layout-btn" onclick="changeLayout(4, this)">L4</button>
-                    <button class="layout-btn" onclick="changeLayout(5, this)">L5</button>
-                </div>
-
-                <p>Pilih Filter AR:</p>
-                <div id="arSelector" class="scroll-x">
+    <div class="container">
+        <h1>📸 Pose.id</h1>
+        
+        <div id="step-capture">
+            <div class="main-grid">
+                <div class="camera-section">
+                    <div class="camera-container">
+                        <video id="video" autoplay playsinline></video>
+                        <canvas id="ar-canvas"></canvas>
+                        <div class="timer-overlay" id="timer"></div>
                     </div>
+                    <button class="capture-btn" onclick="startCapture()">📷 AMBIL FOTO</button>
+                </div>
+                <div class="controls">
+                    <div class="control-group">
+                        <h3>📐 Layout</h3>
+                        <div class="layout-buttons">
+                            <button class="layout-btn active" onclick="selectLayout(1, this)">1 Foto</button>
+                            <button class="layout-btn" onclick="selectLayout(4, this)">4 Kotak</button>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <h3>✨ AR Filter</h3>
+                        <div class="filter-selector" id="arSelector"></div>
+                    </div>
+                </div>
             </div>
-
-            <button class="btn-capture" onclick="startCapture()">📸 AMBIL FOTO</button>
         </div>
 
-        <div id="editSection" style="display:none;">
-            <div class="preview-container">
-                <canvas id="previewCanvas"></canvas>
+        <div id="step-editor" style="display:none;">
+            <div class="main-grid">
+                <div class="camera-section">
+                    <div class="preview-container">
+                        <canvas id="finalCanvas"></canvas>
+                    </div>
+                    <button class="download-all-btn" onclick="downloadResult()">💾 DOWNLOAD HASIL</button>
+                    <button class="capture-btn" style="background:#666; margin-top:10px;" onclick="location.reload()">🔄 ULANGI</button>
+                </div>
+                <div class="controls">
+                    <div class="control-group">
+                        <h3>🖼️ Tahap 1: Pilih Background</h3>
+                        <div id="bgSelector" class="frame-selector scroll-x"></div>
+                    </div>
+                    <div class="control-group">
+                        <h3>🎨 Tahap 2: Pilih Sticker / Frame</h3>
+                        <div id="stickerSelector" class="frame-selector scroll-x"></div>
+                    </div>
+                </div>
             </div>
-
-            <div class="editor-controls">
-                <p>Pilih Background:</p>
-                <div id="bgSelector" class="scroll-x"></div>
-
-                <p>Pilih Sticker / Frame:</p>
-                <div id="stickerSelector" class="scroll-x"></div>
-            </div>
-
-            <button class="btn-capture" onclick="downloadFinal()">💾 DOWNLOAD HASIL</button>
-            <button class="btn-capture" style="background:#666; margin-top:10px;" onclick="location.reload()">🔄 FOTO ULANG</button>
         </div>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-landmarks-detection"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
-
