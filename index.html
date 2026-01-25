@@ -15,19 +15,8 @@
         .layout-btn { width: 100% !important; padding: 15px !important; display: block !important; }
         .switch-btn { width: 100%; padding: 12px; background: #333; color: white; border: none; border-radius: 10px; margin-bottom: 15px; font-weight: bold; cursor: pointer; }
         .container { max-width: 480px; margin: 0 auto; padding: 15px; border-radius: 25px; }
-        
-        /* Gaya Tombol Foto Ulang */
-        .btn-reset {
-            width: 100%;
-            padding: 15px;
-            background: #888;
-            color: white;
-            border: none;
-            border-radius: 20px;
-            font-weight: bold;
-            margin-top: 10px;
-            cursor: pointer;
-        }
+        .btn-reset { width: 100%; padding: 15px; background: #888; color: white; border: none; border-radius: 20px; font-weight: bold; margin-top: 10px; cursor: pointer; }
+        #arSelector { min-height: 80px; background: #fff; border-radius: 15px; display: flex; align-items: center; }
     </style>
 </head>
 <body>
@@ -68,9 +57,7 @@
         <div id="editSection" style="display:none;">
             <div class="main-grid">
                 <div class="camera-section">
-                    <div class="preview-container">
-                        <canvas id="previewCanvas"></canvas>
-                    </div>
+                    <div class="preview-container"><canvas id="previewCanvas"></canvas></div>
                     <button class="download-all-btn" onclick="downloadFinal()">💾 DOWNLOAD FOTO</button>
                     <button class="btn-reset" onclick="location.reload()">🔄 FOTO ULANG (RESET)</button>
                 </div>
