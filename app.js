@@ -26,21 +26,18 @@ const config = {
 // --- 1. INISIALISASI ENGINE 3D (THREE.JS) ---
 function initThreeJS() {
     scene = new THREE.Scene();
-    
-    // Perbaikan Camera 3D agar FOV pas dengan tracking
     camera3D = new THREE.PerspectiveCamera(50, video.videoWidth / video.videoHeight, 0.1, 1000);
     camera3D.position.z = 5;
 
     renderer = new THREE.WebGLRenderer({ 
         canvas: arCanvas, 
         alpha: true, 
-        preserveDrawingBuffer: true, 
+        preserveDrawingBuffer: true, // WAJIB: Agar hasil foto tidak hitam
         antialias: true 
     });
     renderer.setPixelRatio(window.devicePixelRatio); 
     renderer.setSize(video.videoWidth, video.videoHeight);
 
-    // Pencahayaan yang lebih terang agar model 3D tidak hitam
     const ambientLight = new THREE.AmbientLight(0xffffff, 2.0);
     scene.add(ambientLight);
 
@@ -54,12 +51,12 @@ async function initFaceMesh() {
     const model = faceLandmarksDetection.SupportedModels.MediaPipeFaceMesh;
     detector = await faceLandmarksDetection.createDetector(model, {
         runtime: 'tfjs',
-        refineLandmarks: true, // Diaktifkan agar tracking mata lebih presisi
+        refineLandmarks: true,
         solutionPath: 'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh'
     });
 }
 
-// --- 3. UPDATE POSISI FILTER PADA WAJAH (LOGIKA BARU YANG DISATUKAN) ---
+// --- 3. UPDATE POSISI FILTER ---
 async function updateFaceTracking() {
     if (!detector || !video || !filterMesh || isCapturing) return;
     
@@ -69,26 +66,19 @@ async function updateFaceTracking() {
         const face = faces[0];
         const nose = face.keypoints[1]; 
         
-        // Konversi Koordinat normalized (-1 ke 1)
         const x = (nose.x / video.videoWidth) * 2 - 1;
         const y = -(nose.y / video.videoHeight) * 2 + 1;
         
-        // Update Posisi: Faktor pengali disesuaikan agar model menempel di hidung
         filterMesh.position.set(x * 3.8, y * 2.8, 0); 
         filterMesh.visible = true;
 
-        // Hitung Rotasi & Skala Berdasarkan Mata
         const leftEye = face.keypoints[33];
         const rightEye = face.keypoints[263];
-        
-        // Rotasi Z (Miring Kepala)
         filterMesh.rotation.z = Math.atan2(rightEye.y - leftEye.y, rightEye.x - leftEye.x);
 
-        // Skala Dinamis: Filter membesar jika wajah mendekat
         const dist = Math.sqrt(Math.pow(rightEye.x - leftEye.x, 2) + Math.pow(rightEye.y - leftEye.y, 2));
-        const finalScale = (dist / 100) * 3.5; // Angka 3.5 disesuaikan dengan besar filter kamu
+        const finalScale = (dist / 100) * 3.5;
         filterMesh.scale.set(finalScale, finalScale, finalScale);
-
     } else {
         filterMesh.visible = false;
     }
@@ -101,29 +91,34 @@ async function init() {
             video: { width: { ideal: 1280 }, height: { ideal: 720 } } 
         });
         video.srcObject = stream;
-        video.onloadedmetadata = async () => {
-            cameraCanvas.width = arCanvas.width = video.videoWidth;
-            cameraCanvas.height = arCanvas.height = video.videoHeight;
-            initThreeJS();
-            await initFaceMesh();
-            renderLoop();
+        
+        // Pastikan video benar-benar sudah siap
+        video.onloadedmetadata = () => {
+            video.play().then(async () => {
+                cameraCanvas.width = arCanvas.width = video.videoWidth;
+                cameraCanvas.height = arCanvas.height = video.videoHeight;
+                initThreeJS();
+                await initFaceMesh();
+                renderLoop();
+            });
         };
     } catch (err) { console.error("Kamera Error:", err); }
 }
 
 let lastTracking = 0;
 function renderLoop(now) {
-    // Render Kamera (Mirror)
-    ctx2D.save();
-    ctx2D.translate(cameraCanvas.width, 0); 
-    ctx2D.scale(-1, 1);
-    ctx2D.drawImage(video, 0, 0);
-    ctx2D.restore();
+    // Pastikan video memiliki data sebelum digambar ke canvas
+    if (video.readyState === video.HAVE_ENOUGH_DATA) {
+        ctx2D.save();
+        ctx2D.translate(cameraCanvas.width, 0); 
+        ctx2D.scale(-1, 1);
+        ctx2D.drawImage(video, 0, 0, cameraCanvas.width, cameraCanvas.height);
+        ctx2D.restore();
 
-    // Jalankan tracking
-    if (now - lastTracking > 30) { 
-        updateFaceTracking();
-        lastTracking = now;
+        if (now - lastTracking > 30) { 
+            updateFaceTracking();
+            lastTracking = now;
+        }
     }
 
     if (renderer && scene && camera3D) renderer.render(scene, camera3D);
@@ -157,26 +152,38 @@ window.updateARSelector = () => {
     }
 };
 
-// --- 6. CAPTURE & SNAPSHOT ---
+// --- 6. CAPTURE & SNAPSHOT (PERBAIKAN TIMER) ---
 window.startCapture = () => {
-    if (isCapturing) return;
-    capturedPhotos = []; isCapturing = true;
+    if (isCapturing || video.readyState < 2) return;
+    capturedPhotos = []; 
+    isCapturing = true;
     runCountdown();
 };
 
 function runCountdown() {
     let count = 3;
-    timerEl.style.display = 'block';
+    timerEl.style.display = 'block'; // Pastikan muncul
+    timerEl.innerText = count;
+
     const timer = setInterval(() => {
-        timerEl.innerText = count === 0 ? "📸" : count;
-        if (count < 0) {
+        count--;
+        if (count > 0) {
+            timerEl.innerText = count;
+        } else if (count === 0) {
+            timerEl.innerText = "📸";
+        } else {
             clearInterval(timer); 
             timerEl.style.display = 'none';
             takeSnapshot();
-            if (capturedPhotos.length < config[currentLayout].target) runCountdown();
-            else { isCapturing = false; openEditor(); }
+            
+            if (capturedPhotos.length < config[currentLayout].target) {
+                // Beri jeda sedikit sebelum foto berikutnya
+                setTimeout(runCountdown, 500);
+            } else {
+                isCapturing = false;
+                openEditor();
+            }
         }
-        count--;
     }, 1000);
 }
 
@@ -185,12 +192,16 @@ function takeSnapshot() {
     temp.width = cameraCanvas.width; 
     temp.height = cameraCanvas.height;
     const tCtx = temp.getContext("2d");
+    
+    // Gambar orang (dari cameraCanvas yang sudah dimirror)
     tCtx.drawImage(cameraCanvas, 0, 0); 
+    // Gambar filter (dari arCanvas)
     tCtx.drawImage(arCanvas, 0, 0);      
+    
     capturedPhotos.push(temp.toDataURL('image/png'));
 }
 
-// --- 7. EDITOR & DOWNLOAD ---
+// --- 7. EDITOR & PREVIEW ---
 function openEditor() {
     document.getElementById("cameraSection").style.display = "none";
     document.getElementById("editSection").style.display = "block";
@@ -202,65 +213,41 @@ function openEditor() {
 }
 
 function renderAssetList(id, folder, prefix) {
+
     const el = document.getElementById(id);
+
     if(!el) return;
+
     el.innerHTML = "";
+
     for (let i = 1; i <= 10; i++) {
+
         const img = document.createElement("img");
+
         const path = `assets/${folder}/layout${currentLayout}/${prefix}${i}.png`;
+
         img.src = path; 
+
         img.className = "asset-thumb";
+
         img.onclick = () => {
+
             if (prefix === 'bg') selectedBg = path; else selectedSticker = path;
+
             updatePreview();
+
         };
+
         el.appendChild(img);
+
     }
+
 }
+
+
 
 async function updatePreview() {
+
     const canvas = document.getElementById("previewCanvas");
+
     const ctx = canvas.getContext("2d");
-    const conf = config[currentLayout];
-    canvas.width = conf.canvasW; canvas.height = conf.canvasH;
-
-    const loadImg = (src) => new Promise(res => { 
-        const i = new Image(); i.onload = () => res(i); i.onerror = () => res(null); i.src = src; 
-    });
-
-    const bg = await loadImg(selectedBg);
-    if (bg) ctx.drawImage(bg, 0, 0, canvas.width, canvas.height);
-
-    for (let i = 0; i < capturedPhotos.length; i++) {
-        const p = await loadImg(capturedPhotos[i]);
-        if (!p) continue;
-        let x = (canvas.width - conf.photoW) / 2;
-        let y = conf.startY + (i * conf.gap);
-        ctx.drawImage(p, x, y, conf.photoW, conf.photoH);
-    }
-    const st = await loadImg(selectedSticker);
-    if (st) ctx.drawImage(st, 0, 0, canvas.width, canvas.height);
-}
-
-window.downloadFinal = () => {
-    const canvas = document.getElementById("previewCanvas");
-    const btn = document.querySelector(".download-all-btn");
-    const link = document.createElement('a');
-    link.download = `Poseid_${Date.now()}.png`;
-    link.href = canvas.toDataURL('image/png');
-    link.click();
-    
-    btn.innerText = "BERHASIL!";
-    setTimeout(() => btn.innerText = "SIMPAN FOTO", 2000);
-};
-
-window.setLayout = (l, btn) => {
-    currentLayout = l;
-    document.querySelectorAll('.layout-btn').forEach(b => b.classList.remove('active'));
-    if (btn) btn.classList.add('active');
-};
-
-document.addEventListener("DOMContentLoaded", () => {
-    init();
-    setTimeout(window.updateARSelector, 500);
-});
