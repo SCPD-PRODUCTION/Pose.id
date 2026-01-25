@@ -11,8 +11,8 @@ let isCapturing = false;
 let selectedBg = "";
 let selectedSticker = "";
 
-// --- KONFIGURASI FILTER 3D OTOMATIS ---
-const TOTAL_FILTERS = 10; // Ubah angka ini jika jumlah filter bertambah
+// --- KONFIGURASI FILTER 3D ---
+const TOTAL_FILTERS = 10; 
 const PATH_3D = "assets/Ar/";
 const PATH_PREVIEW = "assets/Ar/preview/";
 
@@ -28,21 +28,23 @@ const config = {
 // 2. START APP
 async function init() {
     try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720 } });
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+            video: { width: 1280, height: 720, facingMode: "user" } 
+        });
         video.srcObject = stream;
         video.onloadedmetadata = () => {
             cameraCanvas.width = arCanvas.width = video.videoWidth;
             cameraCanvas.height = arCanvas.height = video.videoHeight;
-            if (typeof initThreeJS === "function") initThreeJS();
-            if (typeof initFaceMesh === "function") initFaceMesh();
-            // Load filter default jika diinginkan
-            if (typeof loadARFilters === "function") {
-                // Contoh: loadARFilters(PATH_3D + 'filter1.glb'); 
-            }
+            
+            // Jalankan fungsi pendukung jika ada
+            if (window.initThreeJS) initThreeJS();
+            if (window.initFaceMesh) initFaceMesh();
+            
             renderLoop();
         };
     } catch (err) {
         console.error("Kamera tidak dapat diakses:", err);
+        alert("Mohon izinkan akses kamera");
     }
 }
 
@@ -52,59 +54,61 @@ async function renderLoop() {
     ctx2D.scale(-1, 1);
     ctx2D.drawImage(video, 0, 0);
     ctx2D.restore();
-    if (renderer && scene && camera3D) renderer.render(scene, camera3D);
+    
+    if (renderer && scene && camera3D) {
+        renderer.render(scene, camera3D);
+    }
     requestAnimationFrame(renderLoop);
 }
 
-// --- LOGIKA LOAD & SELECTOR FILTER 3D (PENYATUAN) ---
+// --- PERBAIKAN LOGIKA SELECTOR FILTER ---
 
 window.loadARFilters = (path) => {
-    if (!scene || !window.THREE) return;
+    if (!scene || !window.THREE || !window.GLTFLoader) {
+        console.error("Three.js belum siap");
+        return;
+    }
     const loader = new THREE.GLTFLoader();
     
     loader.load(path, (gltf) => {
-        if (filterMesh) scene.remove(filterMesh); // Hapus model lama
+        if (filterMesh) scene.remove(filterMesh);
         filterMesh = gltf.scene;
         scene.add(filterMesh);
-        console.log("Filter 3D Aktif:", path);
-    }, undefined, (err) => console.error("Gagal memuat model 3D:", err));
+        console.log("Model dimuat:", path);
+    }, undefined, (err) => console.error("File .glb tidak ditemukan di:", path));
 };
 
 window.updateARSelector = () => {
-    // Menyesuaikan dengan ID "arSelector" di HTML Anda
     const el = document.getElementById("arSelector"); 
     if (!el) return;
     el.innerHTML = "";
 
-    for (let i = 10; i <= TOTAL_FILTERS; i++) {
+    // PERBAIKAN: i mulai dari 1 (sebelumnya Anda tulis 10)
+    for (let i = 1; i <= TOTAL_FILTERS; i++) {
         const img = document.createElement("img");
         const modelPath = `${PATH_3D}filter${i}.glb`;
         const previewPath = `${PATH_PREVIEW}filter${i}.png`;
 
         img.src = previewPath;
-        img.className = "asset-thumb";
+        img.className = "asset-thumb"; // Menggunakan class dari style.css Anda
         
-        // Klik gambar langsung aktifkan model 3D
         img.onclick = () => {
             window.loadARFilters(modelPath);
-            document.querySelectorAll('#arSelector .asset-thumb').forEach(b => b.classList.remove('active'));
-            img.classList.add('active');
+            document.querySelectorAll('#arSelector .asset-thumb').forEach(b => b.classList.remove('selected'));
+            img.classList.add('selected');
         };
 
-        img.onerror = () => img.remove(); // Sembunyikan jika file preview tidak ada
+        // Jika file gambar tidak ada, jangan tampilkan kotak kosong
+        img.onerror = () => img.style.display = "none"; 
         el.appendChild(img);
     }
 };
 
 // 3. CAPTURE LOGIC
-window.changeLayout = (l, btn) => {
+window.setLayout = (l, btn) => {
     currentLayout = l;
     document.querySelectorAll('.layout-btn').forEach(b => b.classList.remove('active'));
     if (btn) btn.classList.add('active');
-};
-
-window.setLayout = (l, btn) => {
-    window.changeLayout(l, btn);
 };
 
 window.startCapture = () => {
@@ -170,7 +174,7 @@ function renderAssetList(id, folder, prefix) {
             if (prefix === 'bg') selectedBg = path; else selectedSticker = path;
             updatePreview();
         };
-        img.onerror = () => img.remove();
+        img.onerror = () => img.style.display = "none";
         el.appendChild(img);
     }
 }
@@ -229,7 +233,6 @@ async function updatePreview() {
             sX = 0;
             sY = (imgH - sH) / 2;
         }
-
         ctx.drawImage(p, sX, sY, sW, sH, x, y, targetW, targetH);
     }
 
@@ -248,8 +251,8 @@ window.downloadFinal = () => {
 // INITIALIZATION
 document.addEventListener("DOMContentLoaded", () => {
     init();
+    // Tunggu sebentar agar container HTML siap
     setTimeout(() => {
-        if (typeof updateARSelector === "function") updateARSelector();
-        if (typeof updateAssetSelectors === "function") updateAssetSelectors();
-    }, 1000);
+        window.updateARSelector();
+    }, 500);
 });
