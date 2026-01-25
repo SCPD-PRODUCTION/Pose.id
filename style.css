@@ -1,182 +1,106 @@
-:root {
-    --peach: #FFDAB9;
-    --pink: #FFB6C1;
-    --dark-pink: #FF1493;
+/* style.css - Desktop Version */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Poppins', sans-serif;
 }
 
 body {
-    background: linear-gradient(135deg, var(--pink) 0%, var(--peach) 100%);
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    margin: 0; 
-    padding: 20px; 
-    min-height: 100vh;
+    background-color: #fff5f8;
+    color: #333;
+    display: flex;
+    justify-content: center;
+    padding: 40px;
 }
 
 .container {
-    max-width: 1100px; 
-    margin: 0 auto;
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(10px);
-    border-radius: 30px; 
+    background: #ffffff;
+    width: 100%;
+    max-width: 1200px;
+    border-radius: 30px;
     padding: 30px;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    box-shadow: 0 20px 50px rgba(255, 20, 147, 0.1);
 }
 
-h1 { 
-    text-align: center; 
-    color: var(--dark-pink); 
-    letter-spacing: 2px; 
-}
-
-.main-grid { 
-    display: grid; 
-    grid-template-columns: 1fr 350px; 
-    gap: 25px; 
-    margin-top: 20px; 
-}
-
-/* Camera UI */
-.camera-container, .preview-container {
-    position: relative; 
-    width: 100%; 
-    aspect-ratio: 4/3;
-    background: #222; 
-    border-radius: 20px; 
+/* Viewfinder Area */
+.viewfinder {
+    position: relative;
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+    aspect-ratio: 16/9;
+    background: #1a1a1a;
+    border-radius: 20px;
     overflow: hidden;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    border: 8px solid #FF1493;
 }
 
-#camera, #camera_canvas, #ar_canvas { 
-    position: absolute; 
-    width: 100%; 
-    height: 100%; 
-    top:0; 
-    left:0; 
-    object-fit: cover;
+canvas#camera_canvas, canvas#ar_canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
 }
 
-#camera { 
-    transform: scaleX(-1); 
-    visibility: hidden; 
+/* PC Editor Layout (Side-by-Side) */
+.editor-layout {
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    gap: 30px;
+    margin-top: 20px;
 }
 
-.timer-overlay {
-    position: absolute; 
-    top: 50%; 
-    left: 50%; 
-    transform: translate(-50%, -50%);
-    font-size: 120px; 
-    color: white; 
-    font-weight: bold; 
-    text-shadow: 0 0 20px rgba(0,0,0,0.5);
-    display: none; 
-    z-index: 100;
+.sidebar {
+    background: #fdf2f7;
+    padding: 20px;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-height: 80vh;
+    overflow-y: auto;
 }
 
-/* Controls */
-.controls { 
-    display: flex; 
-    flex-direction: column; 
-    gap: 20px; 
-}
-
-.control-group { 
-    background: white; 
-    padding: 15px; 
-    border-radius: 20px; 
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05); 
-}
-
-.control-group h3 { 
-    margin-top: 0; 
-    font-size: 14px; 
-    color: #555; 
-    text-transform: uppercase; 
-}
-
-.layout-buttons { 
-    display: grid; 
-    grid-template-columns: 1fr 1fr; 
-    gap: 8px; 
-}
-
-.layout-btn {
-    padding: 10px; 
-    border: 1.5px solid var(--pink); 
-    background: white;
-    border-radius: 10px; 
-    cursor: pointer; 
-    transition: 0.3s;
-    font-weight: bold;
-}
-
-.layout-btn.active { 
-    background: var(--dark-pink); 
-    color: white; 
-    border-color: var(--dark-pink); 
-}
-
-/* --- Perbaikan Selector Assets (Filter/BG/Sticker) --- */
-.scroll-x { 
-    display: flex; 
-    overflow-x: auto; 
-    gap: 10px; 
-    padding: 10px 5px; 
-}
-
-/* Hilangkan scrollbar agar terlihat clean di PC */
-.scroll-x::-webkit-scrollbar {
-    height: 6px;
-}
-.scroll-x::-webkit-scrollbar-thumb {
-    background: var(--pink);
-    border-radius: 10px;
+/* Asset Thumbnails */
+.selector-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    padding: 10px;
 }
 
 .asset-thumb {
-    width: 70px; 
-    height: 70px; 
-    border-radius: 12px; 
-    background: #fff;
-    flex-shrink: 0; 
-    cursor: pointer; 
-    border: 3px solid #eee;
+    width: 100%;
+    aspect-ratio: 1/1;
     object-fit: cover;
-    transition: all 0.2s ease;
-}
-
-.asset-thumb:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 5px 10px rgba(0,0,0,0.1);
-}
-
-.asset-thumb.selected { 
-    border-color: var(--dark-pink); 
-    background: #fff;
-}
-
-/* Buttons */
-.capture-btn {
-    width: 100%; 
-    padding: 18px; 
-    border-radius: 15px; 
-    border: none;
-    background: var(--dark-pink); 
-    color: white; 
-    font-weight: bold;
-    font-size: 16px; 
-    cursor: pointer; 
-    margin-top: 15px;
-    box-shadow: 0 5px 15px rgba(255, 20, 147, 0.3);
-}
-
-.download-all-btn {
-    width: 100%; 
-    padding: 18px; 
-    border-radius: 15px; 
-    border: none;
-    background: #4CAF50; 
-    color: white; 
-    font-weight: bold; 
+    border-radius: 12px;
     cursor: pointer;
+    border: 3px solid transparent;
+    transition: 0.3s ease;
+}
+
+.asset-thumb:hover { transform: scale(1.05); }
+.asset-thumb.selected { border-color: #FF1493; background: #ffebee; }
+
+/* Download Button PC */
+.download-all-btn {
+    background: linear-gradient(135deg, #FF1493, #FF69B4);
+    color: white;
+    padding: 20px;
+    border-radius: 15px;
+    border: none;
+    font-weight: 800;
+    font-size: 18px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    box-shadow: 0 10px 20px rgba(255, 20, 147, 0.3);
+    transition: 0.4s;
+}
+
+.download-all-btn:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(255, 20, 147, 0.5);
 }
