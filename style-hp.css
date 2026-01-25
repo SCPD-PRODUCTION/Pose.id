@@ -1,79 +1,71 @@
-/* style-hp.css - Mobile Version */
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
 body {
-    background-color: #ffffff;
+    background: #ffffff;
+    margin: 0;
     padding: 10px;
 }
 
 .container {
     width: 100%;
-    padding: 10px;
+    display: flex;
+    flex-direction: column;
 }
 
-/* Tampilan Kamera HP tegak lurus */
+/* Kamera HP dibuat Kotak/Potret agar tidak memanjang putih */
 .viewfinder {
-    width: 100%;
-    aspect-ratio: 3/4; /* Lebih cocok untuk potret HP */
-    background: #000;
-    border-radius: 15px;
     position: relative;
+    width: 100%;
+    aspect-ratio: 3/4; /* Biar pas di layar HP */
+    background: #111;
+    border-radius: 15px;
     border: 4px solid #FF1493;
+    overflow: hidden;
 }
 
-/* Selector Horizontal (Scroll ke samping) */
+canvas { position: absolute; top:0; left:0; width:100%; height:100%; }
+
+/* Selector Filter AR di HP (Scroll Samping) */
 .selector-container {
     display: flex;
-    overflow-x: scroll;
-    gap: 12px;
+    gap: 15px;
     padding: 15px 5px;
+    overflow-x: scroll;
     -webkit-overflow-scrolling: touch;
 }
 
 .asset-thumb {
-    min-width: 75px;
-    height: 75px;
-    border-radius: 50%; /* Bulat agar estetik di HP */
-    object-fit: cover;
+    min-width: 65px;
+    height: 65px;
+    border-radius: 50%; /* Gaya bundar untuk HP */
     border: 3px solid #eee;
+    object-fit: cover;
 }
 
-.asset-thumb.selected {
-    border-color: #FF1493;
+.asset-thumb.selected { border-color: #FF1493; }
+
+/* Tombol Layout (Dibuat Grid 2 Kolom biar rapi) */
+#layoutSelector {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
 }
 
-/* Layout Editor Menumpuk Vertikal */
-.editor-layout {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+.layout-btn {
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    background: #f9f9f9;
 }
 
-canvas#previewCanvas {
-    width: 100% !important;
-    height: auto !important;
-    border-radius: 15px;
-}
+.layout-btn.active { background: #FF1493; color: white; }
 
-/* Tombol Download Besar di Bawah */
+/* Tombol Download di HP */
 .download-all-btn {
-    position: sticky;
-    bottom: 20px;
     width: 100%;
+    padding: 20px;
     background: #FF1493;
     color: white;
-    padding: 18px;
-    border-radius: 50px; /* Rounded pill style */
-    font-size: 16px;
     font-weight: bold;
+    border-radius: 50px;
     border: none;
-    box-shadow: 0 8px 20px rgba(255, 20, 147, 0.4);
-}
-
-#timer {
-    font-size: 120px;
+    margin-top: 20px;
 }
