@@ -11,6 +11,11 @@ let isCapturing = false;
 let selectedBg = "";
 let selectedSticker = "";
 
+// --- KONFIGURASI FILTER 3D OTOMATIS ---
+const TOTAL_FILTERS = 10; // Ubah angka ini jika jumlah filter bertambah
+const PATH_3D = "assets/Ar/";
+const PATH_PREVIEW = "assets/Ar/preview/";
+
 // 1. CONFIG LAYOUT 1-5
 const config = {
     1: { canvasW: 506, canvasH: 765, photoW: 380, photoH: 550, startY: 100, gap: 0, target: 1 },
@@ -47,6 +52,45 @@ async function renderLoop() {
     if (renderer && scene && camera3D) renderer.render(scene, camera3D);
     requestAnimationFrame(renderLoop);
 }
+
+// --- LOGIKA LOAD & SELECTOR FILTER 3D (PENYATUAN) ---
+
+window.loadARFilters = (path) => {
+    if (!scene || !window.THREE) return;
+    const loader = new THREE.GLTFLoader();
+    
+    loader.load(path, (gltf) => {
+        if (filterMesh) scene.remove(filterMesh); // Hapus model lama
+        filterMesh = gltf.scene;
+        scene.add(filterMesh);
+        console.log("Filter 3D Aktif:", path);
+    }, undefined, (err) => console.error("Gagal memuat model 3D:", err));
+};
+
+window.updateARSelector = () => {
+    const el = document.getElementById("arFilterSelector"); // Pastikan ID ini ada di HTML Anda
+    if (!el) return;
+    el.innerHTML = "";
+
+    for (let i = 1; i <= TOTAL_FILTERS; i++) {
+        const img = document.createElement("img");
+        const modelPath = `${PATH_3D}filter${i}.glb`;
+        const previewPath = `${PATH_PREVIEW}filter${i}.png`;
+
+        img.src = previewPath;
+        img.className = "asset-thumb";
+        
+        // Begitu klik gambar, langsung panggil model 3D-nya
+        img.onclick = () => {
+            window.loadARFilters(modelPath);
+            document.querySelectorAll('#arFilterSelector .asset-thumb').forEach(b => b.classList.remove('active'));
+            img.classList.add('active');
+        };
+
+        img.onerror = () => img.remove(); // Sembunyikan jika file preview tidak ada
+        el.appendChild(img);
+    }
+};
 
 // 3. CAPTURE LOGIC
 window.changeLayout = (l, btn) => {
