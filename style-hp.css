@@ -1,71 +1,29 @@
-body {
-    background: #ffffff;
-    margin: 0;
-    padding: 10px;
+/* Styling Thumbnail Filter AR di HP */
+.scroll-x { 
+    display: flex; 
+    overflow-x: auto; 
+    gap: 12px; 
+    padding: 10px 0;
+    -webkit-overflow-scrolling: touch; /* Scroll halus di iPhone */
 }
 
-.container {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-}
+.scroll-x::-webkit-scrollbar { display: none; } /* Sembunyikan scrollbar di HP */
 
-/* Kamera HP dibuat Kotak/Potret agar tidak memanjang putih */
-.viewfinder {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 3/4; /* Biar pas di layar HP */
-    background: #111;
-    border-radius: 15px;
-    border: 4px solid #FF1493;
-    overflow: hidden;
-}
-
-canvas { position: absolute; top:0; left:0; width:100%; height:100%; }
-
-/* Selector Filter AR di HP (Scroll Samping) */
-.selector-container {
-    display: flex;
-    gap: 15px;
-    padding: 15px 5px;
-    overflow-x: scroll;
-    -webkit-overflow-scrolling: touch;
-}
-
-.asset-thumb {
-    min-width: 65px;
-    height: 65px;
-    border-radius: 50%; /* Gaya bundar untuk HP */
+.ar-thumb, .asset-thumb {
+    width: 70px; 
+    height: 70px; 
+    border-radius: 50%; /* Dibuat bulat agar estetik di HP */
+    background: white;
+    flex-shrink: 0; 
+    cursor: pointer; 
     border: 3px solid #eee;
     object-fit: cover;
+    transition: 0.2s;
 }
 
-.asset-thumb.selected { border-color: #FF1493; }
-
-/* Tombol Layout (Dibuat Grid 2 Kolom biar rapi) */
-#layoutSelector {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-}
-
-.layout-btn {
-    padding: 12px;
-    border-radius: 8px;
-    border: 1px solid #ddd;
-    background: #f9f9f9;
-}
-
-.layout-btn.active { background: #FF1493; color: white; }
-
-/* Tombol Download di HP */
-.download-all-btn {
-    width: 100%;
-    padding: 20px;
-    background: #FF1493;
-    color: white;
-    font-weight: bold;
-    border-radius: 50px;
-    border: none;
-    margin-top: 20px;
+/* State saat filter dipilih di HP */
+.ar-thumb.selected, .asset-thumb.selected {
+    border-color: var(--pink);
+    box-shadow: 0 0 12px rgba(255, 20, 147, 0.4);
+    transform: scale(1.1);
 }
